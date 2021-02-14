@@ -54,9 +54,9 @@ def stitcher(inputdir,outputdir,gtdir,stitchdir):
         
         simg = Image.open(filename)
         stitched = ImageDraw.Draw(simg)
-        stitched.text((15,15), caption_text1, (2, 2, 2), font = caption_font)
-        stitched.text((527,15), caption_text2, (2, 2, 2), font = caption_font)
-        stitched.text((1039,15), gt_text, (2, 2, 2), font = gt_font)
+        stitched.text((15,15), caption_text1, font = caption_font)
+        stitched.text((527,15), caption_text2, font = caption_font)
+        stitched.text((1039,15), gt_text, font = gt_font)
      
         simg.save(filename)
 
@@ -65,7 +65,7 @@ def stitcher(inputdir,outputdir,gtdir,stitchdir):
 inputdir = 'testdata/input/noisy_512'
 outputdir = 'testdata/output'
 gtdir = 'testdata/ground_truth/noisy_512'
-stitchdir ='testdata/stitched/noisy_512_v1.2'
+stitchdir ='testdata/stitched/noisy_512_v1.0'
 
 stitcher(inputdir,outputdir,gtdir,stitchdir)
 

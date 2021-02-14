@@ -12,43 +12,19 @@ from skimage.measure import compare_ssim
 from skimage import io
 
 
-def noisy(noise_typ,image,opts=[0,0.005]):
-    if noise_typ == "gauss":
-        mean = opts[0]
-        var = opts[1]
-        sigma = var**0.5
-        gauss = np.random.normal(mean,sigma,image.shape)
-        gauss = gauss.reshape(image.shape)
-        noisy = (image + 50*gauss)
-        #noisy is float64
-        noisy = np.clip(noisy,0,255)
-        #clip to avoid black speckling
-        noisy = noisy.astype(np.uint8)
-        return noisy
-    elif noise_typ == "s&p":
-        row,col,ch = image.shape
-        s_vs_p = 0.5
-        amount = opts[1]
-        out = np.copy(image)
-        # Salt mode NB 255 is used as out is a uint8
-        num_salt = np.ceil(amount * image.size * s_vs_p)
-        coords = [np.random.randint(0, i - 1, int(num_salt))
-        for i in (row, col)]
-        out[coords] = 255
-        # Pepper mode
-        num_pepper = np.ceil(amount* image.size * (1. - s_vs_p))
-        coords = [np.random.randint(0, i - 1, int(num_pepper))
-        for i in (row, col)]
-        out[coords] = 0
-        return out
-    elif noise_typ == "poisson":
-        vals = len(np.unique(image))
-        vals = 2 ** np.ceil(np.log2(opts[0]))
-        noisy = np.random.poisson(image * vals) / float(vals)
-        return noisy/np.max(noisy)*np.max(image)
+def blur(src,OTF):
+    #current code assumes uint8 synthetic one channel OTF
+    otf_img = Image.open(OTF)
+    otf = np.array(otf_img)
+    #otf_img = np.sum(otf_img,2)/765
+    img_spec = np.fft.fft2(src)
+    img_spec = np.fft.fftshift(img_spec)
+    clipped_spectrum = img_spec * (otf/255)
+    blurred = np.fft.ifftshift(clipped_spectrum)
+    blurred = np.fft.ifft2(blurred)
+    print(np.max(blurred))
+    return abs(blurred)
     
-
-
 
 
 def partitionTestset(imgs,imgoutdir,gtoutdir,nreps,dim,degradeBool=True):
@@ -62,31 +38,28 @@ def partitionTestset(imgs,imgoutdir,gtoutdir,nreps,dim,degradeBool=True):
         
         src_img = Image.open(imgs[i])
         src_img = np.array(src_img)
-                 
-        # get rid of gba channels and invert
-        # src_gt_img = src_gt_img[:,:,0]
-  
-        # normalize and add dimension
-        # src_img = (src_img - np.min(src_img)) / (np.max(src_img) - np.min(src_img)) 
-        # src_gt_img = src_gt_img/255
 
+         #open image and greyscale
+        src_img = Image.open(imgs[i])
+        src_img = np.array(src_img)
+        gs_img = np.sum(src_img, 2)/3
+                 
    
         h,w = src_img.shape[0:2]
 
         j = 0
         while j < nreps:
-            # random cropping 
+
+             # random cropping 
             r_rand = np.random.randint(0,h-dim)
             c_rand = np.random.randint(0,w-dim)
-            img = src_img[r_rand:r_rand+dim,c_rand:c_rand+dim,0:]
-            #img is a uint8
+            img = gs_img[r_rand:r_rand+dim,c_rand:c_rand+dim]
+            #img is a uint8, make a copy
             gt_img = img.copy()
 
 
-            # adding gaussian noise
-            
-            gauss_param = np.max([0, 0.1*np.random.randn() + 0.5])
-            img = noisy('gauss',img,[0,gauss_param])
+            # adding blur
+            img = blur(img,'OTF_512.png')
             
             
             filename = '%s/%d-%d_testimg.png' % (imgoutdir,i,j)
@@ -111,7 +84,7 @@ def partitionTestset(imgs,imgoutdir,gtoutdir,nreps,dim,degradeBool=True):
 
 nreps = 3
 #dim = 128
-dim = 256
+dim = 512
 
 allimgs = [
     "DIV2K_train_HR/0031.png",
