@@ -125,11 +125,8 @@ def EvaluateModel(opt):
                 print(list(sr.size()))
 
                 
-                #m = nn.LogSoftmax(dim=0)
-                #sr = m(sr[0])
-                sr = torch.clamp(sr[0],0,1)
-                #print(list(sr.size()))
                
+                sr = torch.clamp(sr[0],0,1)
                 pil_sr_img = toPIL(sr)
 
             
@@ -157,10 +154,10 @@ def EvaluateModel(opt):
 
         oimg = np.concatenate((top,bot),axis=0)
         
-        oimg[:10,:] = 0
-        oimg[-10:,:] = 0
-        oimg[:,:10] = 0
-        oimg[:,-10:] = 0
+        #oimg[:10,:] = 0
+        #oimg[-10:,:] = 0
+        #oimg[:,:10] = 0
+        #oimg[:,-10:] = 0
         #print('oimg shape is:', oimg.shape)
 
         print(imgfile,i)

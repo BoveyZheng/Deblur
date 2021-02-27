@@ -65,7 +65,7 @@ def stitcher(inputdir,outputdir,gtdir,stitchdir):
 inputdir = 'testdata/input/noisy_512'
 outputdir = 'testdata/output'
 gtdir = 'testdata/ground_truth/noisy_512'
-stitchdir ='testdata/stitched/noisy_512_v1.0'
+stitchdir ='testdata/stitched/noisy_512_v1.2'
 
 stitcher(inputdir,outputdir,gtdir,stitchdir)
 
