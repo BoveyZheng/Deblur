@@ -15,8 +15,7 @@ from skimage import io
 def blur(src,OTF):
     #current code assumes uint8 synthetic one channel OTF
     otf_img = Image.open(OTF)
-    otf = np.array(otf_img)
-    #otf_img = np.sum(otf_img,2)/765
+    otf = np.array(otf_img)[:,:,0]
     img_spec = np.fft.fft2(src)
     img_spec = np.fft.fftshift(img_spec)
     clipped_spectrum = img_spec * (otf/255)
@@ -54,7 +53,13 @@ def partitionDataset(imgs,outdir,nreps,dim,degradeBool=True):
 
 
             # adding blur
-            img = blur(img,'OTF.png')
+            img = blur(img,'OTF_fiji.png')
+
+            # adding blur (random selection)
+            #allotfs = sorted(glob.glob('OTFrange/*.png'))
+            #rand_otf = random.choice(allotfs)
+            #print(rand_otf)
+            #img = blur(img,rand_otf)
 
             
             filename = '%s/%d-%d.pkl' % (outdir,i,j)
@@ -79,7 +84,7 @@ nreps = 3
 dim = 128
 
 allimgs = sorted(glob.glob('DIV2K_train_HR/*.png'))[100:800]
-outdir = 'trainingdata/noisy_' + str(dim)
+outdir = 'trainingdata/noisy_r' + str(dim)
 print('Training data')
 
 partitionDataset(allimgs,outdir,nreps,dim,False)
